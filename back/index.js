@@ -6,14 +6,16 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import employemodule from './models/usermodel.js';  // Employee model
 import bd from './bd.js';  // Database connection
+import { config, configDotenv } from 'dotenv';
 
 const app = express();
-const port = 3000;
-
+config();
+const port = process.env.PORT;
 // Middleware
+
 app.use(cookieParser());
 app.use(cors({
-  origin: ['http://localhost:5173'],  // Change this to your frontend URL
+  origin: [process.env.ORIGIN],  // Change this to your frontend URL
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -53,7 +55,7 @@ app.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).send('Invalid email or password');
     }
-    const token = jwt.sign({ email: user.email }, "secret_key", { expiresIn: "1d" });
+    const token = jwt.sign({ email: user.email }, process.env.SECRET_KEY, { expiresIn: "1d" });
     res.cookie("token", token, { httpOnly: true });
     res.json({ token });  
   } catch (err) {
@@ -61,7 +63,6 @@ app.post('/login', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
 // Middleware to verify the JWT token
 const verify = (req, res, next) => {
   const token = req.cookies.token;  // Fetch token from cookies
@@ -70,13 +71,17 @@ const verify = (req, res, next) => {
   }
   try {
     // Verify the token
-    const verified = jwt.verify(token, "secret_key");
+    const verified = jwt.verify(token, process.env.SECRET_KEY);
     req.user = verified;
     next();
   } catch (err) {
     res.status(400).send('Invalid token');
   }
 };
+app.post('/logout', (req, res) => {
+  res.clearCookie('token');  // Clear the cookie named 'session_token'
+  res.status(200).send('Logged out');
+});
 
 // Protected home route
 app.post('/home', verify, (req, res) => {
@@ -86,5 +91,6 @@ app.post('/home', verify, (req, res) => {
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  // console.log(process.env.SECRET_KEY)
 });
 

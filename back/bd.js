@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const bd = () => {
-  mongoose.connect('mongodb+srv://admin:admin@cluster0.rdvin0r.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+  mongoose.connect(process.env.MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

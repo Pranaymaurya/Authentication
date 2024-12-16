@@ -23,8 +23,13 @@ export default function Home() {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:3000/logout');  // Send a request to the backend to log out
+      navigate('/');  // Navigate to the login page after successful logout
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
